@@ -18,7 +18,7 @@ It simulates an **Excel interview** by asking questions and allowing candidates 
 
 ## 📸 Demo  
 
-👉 [**Try ExcelBot on Hugging Face Spaces**](YOUR_HF_SPACES_LINK_HERE)  
+👉 [**Try ExcelBot on Hugging Face Spaces**](https://huggingface.co/spaces/Eaglesight/bot)  
 
 ## 🧑‍💻 Installation (Run Locally)  
 
