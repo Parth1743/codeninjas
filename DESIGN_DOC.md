@@ -1,105 +1,168 @@
 
-# 📑 Design Document – Excel Interview Assistant  
+# 📑 Design Document – Excel Interview Assistant
 
-## 1. Problem Statement  
-Hiring managers need a consistent, automated way to evaluate Excel proficiency of candidates.  
-Traditional Q&A interviews are time-consuming and subjective. This bot simulates an Excel interviewer, asks structured questions, evaluates answers with flexibility, and validates uploaded Excel assignments automatically.  
+## 1. Problem Statement
 
----
+Hiring managers need a consistent, automated way to evaluate Excel proficiency of candidates.
+Traditional interviews are:
 
-## 2. Solution Overview  
-The solution is an **AI-powered Excel Interview Assistant** that:  
-- Conducts interactive interviews with candidates (Q&A style).  
-- Adapts difficulty level (Beginner, Intermediate, Advanced).  
-- Evaluates answers flexibly using an **LLM** for semantic understanding.  
-- Provides immediate feedback and final **Pass/Fail**.  
-- Includes **scenario-based Excel assignments** where candidates upload a file.  
-- Automatically checks formulas, formatting, pivots, validation rules, and more.  
+* Time-consuming
+* Subjective
+* Hard to scale
 
-Deployment is done via **Hugging Face Spaces** for easy access by evaluators and candidates.  
+This solution automates Excel assessments via an **AI Interview Assistant** that simulates a real interviewer, evaluates Q\&A responses, validates uploaded Excel assignments, and generates professional reports.
 
 ---
 
-## 3. System Architecture  
+## 2. Solution Overview
 
-### Components:
-1. **Frontend (Gradio UI)**  
-   - Chatbot tab for structured Q&A.  
-   - Excel Checker tab for file uploads.  
-   - Clean, tab-based interface with onboarding message.  
+The **Excel Interview Assistant** provides:
 
-2. **Backend Logic**  
-   - **Interview Manager**: Handles state (difficulty, score, current question).  
-   - **LLM Evaluator**: Hugging Face `InferenceClient` with `gpt-oss-20b` for answer evaluation.  
-   - **Excel Checker**: Python + OpenPyXL rules to verify candidate submissions.  
+* **Login & Verification** → Secure Hugging Face login, candidate details validation.
+* **Structured Interview** → Multi-turn Q\&A (Beginner, Intermediate, Advanced).
+* **AI Evaluation** → LLM-powered semantic correctness checking.
+* **Practical Assessment** → Excel scenario tasks validated via automated checker.
+* **Reporting** → Auto-generated PDF report, silent email delivery to owner.
 
-3. **Data**  
-   - Curated question bank (45+ Q&As) with acceptable alternatives.  
-   - Scenario-based problem sets (1 beginner, 1 intermediate, 1 advanced).  
+Deployment is done via **Hugging Face Spaces**, making it accessible to both recruiters and candidates without setup.
 
 ---
 
-## 4. Interview Flow  
+## 3. System Architecture
 
-1. Bot introduces itself and asks user to choose proficiency: beginner / intermediate / advanced.  
-2. Picks 5 random questions from that level.  
-3. After each answer:  
-   - Uses LLM + rule-based matching for correctness.  
-   - Responds with ✅ or ❌ + short explanation.  
-   - Keeps internal score.  
-4. At end:  
-   - Displays final score + **Pass/Fail (≥3/5 = Pass)**.  
-   - Optionally assigns an Excel scenario task.  
+### Components
 
----
+1. **Frontend (Gradio UI)**
 
-## 5. Excel Checker Flow  
+   * Sidebar: Hugging Face Login.
+   * Tab 1: Candidate Info (Name, Email validation).
+   * Tab 2: Interview Bot (Q\&A with chatbot UI).
+   * Tab 3: Excel Checker (scenario-based file uploads).
+   * Tab 4: Final Report (PDF download + email to owner).
 
-1. Candidate uploads `.xlsx` file.  
-2. Rules checked (based on proficiency):  
-   - **Beginner**: SUM, AVERAGE, conditional formatting.  
-   - **Intermediate**: VLOOKUP/XLOOKUP, Total Sales formulas, data validation, pivot tables.  
-   - **Advanced**: Nested IF, pivot tables, charts, macros.  
-3. Generates detailed report: which checks passed/failed.  
-4. Outputs score and Pass/Fail (≥70% = Pass).  
+2. **Backend Logic**
 
----
+   * **Interview Manager** → Tracks difficulty, score, and current progress.
+   * **LLM Evaluator** → Uses Hugging Face `InferenceClient` (`openai/gpt-oss-20b`) for intelligent, flexible scoring.
+   * **Excel Checker** → Python + OpenPyXL-based rule verification.
+   * **Report Generator** → Builds structured PDF via ReportLab.
+   * **Email Notifier** → Sends results silently to recruiter using Resend API.
 
-## 6. Technical Stack  
-- **Frontend/UI**: Gradio (Blocks, Tabs, ChatInterface).  
-- **LLM**: Hugging Face `openai/gpt-oss-20b`.  
-- **Excel Analysis**: Python, OpenPyXL.  
-- **Deployment**: Hugging Face Spaces (Docker-free, public).  
+3. **Data**
+
+   * Question bank: curated Q\&A pool with acceptable alternatives.
+   * Scenario prompts: beginner, intermediate, advanced Excel tasks.
 
 ---
 
-## 7. Strengths & Justification  
-- **Hugging Face**: Free, shareable, requires no infra setup.  
-- **Gradio**: Simple to build UI, easy candidate interaction.  
-- **LLM + Rules**: Combines semantic flexibility (LLM) with deterministic checks (rules).  
-- **Extendable**: Can add new scenarios, new questions, or fine-tune model later.  
+## 4. Candidate Flow (Step-by-Step)
+
+1. **Login with Hugging Face**
+
+   * Ensures authenticated, verified candidate sessions.
+
+2. **Fill Candidate Info**
+
+   * Enter **Name** and **Email**.
+   * Email format validated.
+   * Once saved → Candidate Info tab is locked to prevent tampering.
+   * Interview Bot tab is unlocked.
+
+3. **Interview Stage**
+
+   * Candidate selects difficulty (Beginner/Intermediate/Advanced).
+   * 5 random questions asked in sequence.
+   * Answers are evaluated via LLM with semantic flexibility.
+   * Bot provides ✅ / ❌ with short explanations.
+   * Final summary → Score (/5) + Pass/Fail.
+   * If quiz completed → Excel Checker tab unlocked.
+
+4. **Excel Checker Stage**
+
+   * Candidate receives scenario prompt.
+   * Uploads `.xlsx` file solution.
+   * Automated rule-based checker validates formulas, pivots, formatting, etc.
+   * Generates detailed pass/fail report.
+   * Once analysis complete → Final Report tab unlocked.
+
+5. **Final Report Stage**
+
+   * Consolidates candidate info, quiz performance, and Excel evaluation.
+   * Verdict → ✅ Pass if both theory & practical are cleared, ❌ Fail otherwise.
+   * Candidate can download a PDF.
+   * Recruiter receives report silently via Resend email.
 
 ---
 
-## 8. Future Improvements  
-- Add email reporting (send results to candidate + recruiter).  
-- Store candidate results in a database (SQLite/Postgres).  
-- Fine-tune LLM on actual interview transcripts for better accuracy.  
-- Improve Excel Checker to detect charts, pivots, macros more robustly.  
-- Gamify with timer/leaderboards.  
+## 5. Interview Flow
+
+1. Candidate Info collected.
+2. Quiz session begins → 5 multi-turn Q\&A.
+3. Each answer:
+
+   * Evaluated with context-aware LLM.
+   * Scoring updated.
+4. At end of quiz → result shown.
+5. Unlocks Excel Checker → file-based validation.
+6. Final Report → pass/fail verdict, PDF generated, recruiter notified.
 
 ---
 
-## 9. Example Transcript  
+## 6. Excel Checker Flow
 
-**Bot:** 👋 Hi! I am your AI Excel interviewer. Please choose: beginner / intermediate / advanced.  
-**Candidate:** beginner  
-**Bot:** Great! Let’s start.  
+* **Beginner**: Check for SUM, AVERAGE, conditional formatting.
+* **Intermediate**: Check for VLOOKUP/XLOOKUP, totals, validation, pivot tables.
+* **Advanced**: Nested IF, pivots, charts, macros.
+* Each feature detected → contributes to score.
+* Pass threshold: **≥70% features met**.
 
-**Q1:** What is the difference between A1 and $A$1?  
-**Candidate:** relative vs absolute reference  
-**Bot:** ✅ Correct! Good job.  
+---
 
-... (5 questions) ...  
+## 7. Technical Stack
 
-**Bot:** 🎉 Quiz complete! Final Score: 4/5 → ✅ PASS  
+* **Frontend/UI** → Gradio (Blocks, Tabs, States).
+* **Authentication** → Hugging Face OAuth login.
+* **LLM Evaluation** → Hugging Face `InferenceClient` (`openai/gpt-oss-20b`).
+* **Excel Analysis** → Python, OpenPyXL.
+* **Report Generation** → ReportLab (PDF).
+* **Email Delivery** → Resend API (to recruiter only).
+* **Deployment** → Hugging Face Spaces.
+
+---
+
+## 8. Strengths & Justification
+
+* **Structured, progressive flow** → no skipping ahead.
+* **Human-like evaluation** → AI adapts to synonyms, natural responses.
+* **Rule-based Excel validation** → ensures objectivity.
+* **Professional reports** → PDF + recruiter email for audit trail.
+* **Secure** → Requires Hugging Face login, validated candidate info.
+
+---
+
+## 9. Future Improvements
+
+* Dual email delivery (candidate + recruiter).
+* Database integration (SQLite/Postgres) for persistent results.
+* Advanced NLP fine-tuning for improved evaluation accuracy.
+* Richer Excel validation (charts, pivot drill-down, macros detection).
+* Gamification (timed rounds, leaderboards).
+
+---
+
+## 10. Example Transcript
+
+**Bot:** 👋 Hi! Please log in with Hugging Face and enter your details to start.
+**Candidate:** Logged in + Info saved.
+**Bot:** Great, PARTH! You selected Beginner level.
+
+**Q1:** What is the difference between A1 and \$A\$1?
+**Candidate:** relative vs absolute reference
+**Bot:** ✅ Correct! A1 moves when copied, \$A\$1 stays fixed.
+
+... (5 questions) ...
+
+**Bot:** 🎉 Quiz complete! Final Score: 4/5 → ✅ PASS
+**Bot:** Excel Checker unlocked. Please upload your assignment file.
+
+---
