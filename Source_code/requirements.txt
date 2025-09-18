@@ -1,0 +1,6 @@
+gradio
+huggingface-hub
+pandas
+openpyxl
+sympy
+reportlab
